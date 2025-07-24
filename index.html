@@ -16,6 +16,9 @@
         - Sponsors & Events: Presented in structured tables and cards for clarity and easy scanning. Goal: Organize.
         - Logistics Checklist: Implemented as interactive accordions with checkboxes. This organizes a large amount of information cleanly and allows the user to track their acquisitions. Goal: Organize/Track. Interaction: Users can check items, and a counter updates, providing immediate feedback.
         - Financial Analysis: Interactive table with input fields for cost/revenue projections, dynamically updating a bar chart comparing event profitability. This allows for scenario planning. Goal: Analyze/Plan.
+        - Info/Links Section: Interactive table to dynamically add and remove important links or file references. Goal: Organize/Centralize.
+        - Event Details Section: Dedicated cards for each event with a textarea for note-taking. Goal: Plan/Detail.
+        - Persistence: Added localStorage to save the state of checkboxes, textareas, and the info table, ensuring data is not lost on refresh. Goal: User Experience/Utility.
         - Navigation: Smooth scrolling JS for a seamless single-page experience. Goal: User Experience.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
@@ -46,6 +49,9 @@
             overflow: hidden;
             transition: max-height 0.3s ease-out;
         }
+        textarea {
+            resize: vertical;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -56,23 +62,25 @@
                 <div class="flex-shrink-0">
                     <h1 class="text-lg font-bold text-gray-900">Projet Gazelles</h1>
                 </div>
-                <div class="hidden md:block">
+                <div class="hidden lg:block">
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="#dashboard" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Tableau de Bord</a>
-                        <a href="#sponsors" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Sponsors</a>
-                        <a href="#events" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Événements</a>
-                        <a href="#finance" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Finances</a>
-                        <a href="#com" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Communication</a>
-                        <a href="#logistics" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Logistique</a>
+                        <a href="#dashboard" class="nav-link text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Tableau de Bord</a>
+                        <a href="#sponsors" class="nav-link text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Sponsors</a>
+                        <a href="#events" class="nav-link text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Événements</a>
+                        <a href="#event-details" class="nav-link text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Détails Événements</a>
+                        <a href="#finance" class="nav-link text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Finances</a>
+                        <a href="#infos" class="nav-link text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Infos</a>
+                        <a href="#logistics" class="nav-link text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Logistique</a>
                     </div>
                 </div>
-                <div class="md:hidden">
+                <div class="lg:hidden">
                     <select id="mobile-nav" class="bg-white border border-gray-300 rounded-md py-2 px-3 text-sm">
                         <option value="#dashboard">Tableau de Bord</option>
                         <option value="#sponsors">Sponsors</option>
                         <option value="#events">Événements</option>
+                        <option value="#event-details">Détails Événements</option>
                         <option value="#finance">Finances</option>
-                        <option value="#com">Communication</option>
+                        <option value="#infos">Infos</option>
                         <option value="#logistics">Logistique</option>
                     </select>
                 </div>
@@ -202,7 +210,16 @@
                 </div>
             </div>
         </section>
+
+        <div class="border-t my-16"></div>
         
+        <section id="event-details" class="pt-8">
+            <h2 class="text-3xl font-bold text-center mb-10">📝 Détails des Événements</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Utilisez cet espace pour détailler la planification de chaque événement. Notez les contacts, les listes de tâches, les idées de décoration, et tout ce qui vous aidera à organiser des actions réussies.</p>
+            <div id="event-notes-container" class="grid md:grid-cols-2 gap-8">
+            </div>
+        </section>
+
         <div class="border-t my-16"></div>
 
         <section id="finance" class="pt-8">
@@ -237,13 +254,17 @@
                         <div class="bg-gray-200 rounded-t-3xl h-20 w-full"></div>
                         <div class="bg-gray-300 rounded-b-lg h-32 w-full relative grid grid-cols-5 grid-rows-2 gap-2 p-2">
                             <div class="col-span-5 row-span-2 bg-gray-400 rounded-md flex items-center justify-center text-white font-bold text-center p-2">
-                                <div class="bg-rose-900/80 rounded p-2 text-xs">Capot Principal<br>5 000 €</div>
+                                <div class="bg-rose-900/80 rounded p-2 text-xs">Capot Principal<br>3 000 €</div>
                             </div>
                         </div>
-                        <div class="bg-gray-200 h-40 w-full grid grid-cols-3 gap-2 p-2">
-                             <div class="bg-rose-800/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Porte G<br>1 500 €</div>
-                             <div class="bg-rose-700/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Toit<br>2 500 €</div>
-                             <div class="bg-rose-800/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Porte D<br>1 500 €</div>
+                        <div class="bg-gray-200 h-40 w-full flex items-center justify-center gap-1 p-2">
+                            <div class="bg-rose-600/80 rounded h-10 w-8 flex items-center justify-center text-white font-bold text-[10px] leading-tight text-center">Rétro<br>1k€</div>
+                            <div class="flex-grow h-full grid grid-cols-3 gap-2">
+                                 <div class="bg-rose-800/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Porte G<br>1 500 €</div>
+                                 <div class="bg-rose-700/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Toit<br>5 000 €</div>
+                                 <div class="bg-rose-800/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Porte D<br>1 500 €</div>
+                            </div>
+                            <div class="bg-rose-600/80 rounded h-10 w-8 flex items-center justify-center text-white font-bold text-[10px] leading-tight text-center">Rétro<br>1k€</div>
                         </div>
                          <div class="bg-gray-300 rounded-b-3xl h-20 w-full flex items-center justify-center">
                             <div class="bg-rose-900/80 rounded p-2 text-white font-bold text-xs text-center">Arrière<br>3 000 €</div>
@@ -252,9 +273,9 @@
                     <div>
                         <p class="text-gray-600 mb-4 text-sm">Les emplacements sur le véhicule offrent une visibilité exceptionnelle pour nos partenaires. Nous proposons plusieurs niveaux de sponsoring :</p>
                         <ul class="space-y-3 text-sm">
-                            <li class="p-3 bg-rose-50 rounded-lg"><strong class="text-rose-900">Platine (5000€+) :</strong> Emplacement principal (capot), visibilité maximale sur tous les supports.</li>
-                            <li class="p-3 bg-gray-50 rounded-lg"><strong class="text-gray-800">Or (2500€ - 4999€) :</strong> Emplacements majeurs (toit, arrière), forte visibilité.</li>
-                            <li class="p-3 bg-gray-50 rounded-lg"><strong class="text-gray-800">Argent (1000€ - 2499€) :</strong> Emplacements secondaires (portes), bonne visibilité.</li>
+                            <li class="p-3 bg-rose-50 rounded-lg"><strong class="text-rose-900">Platine (5000€+) :</strong> Emplacement principal (toit), visibilité maximale sur tous les supports.</li>
+                            <li class="p-3 bg-yellow-50 rounded-lg"><strong class="text-yellow-900">Or (2500€ - 4999€) :</strong> Emplacements majeurs (capot, arrière), forte visibilité.</li>
+                            <li class="p-3 bg-gray-100 rounded-lg"><strong class="text-gray-800">Argent (1000€ - 2499€) :</strong> Emplacements secondaires (portes, rétroviseurs), bonne visibilité.</li>
                         </ul>
                     </div>
                 </div>
@@ -263,31 +284,34 @@
 
         <div class="border-t my-16"></div>
 
-        <section id="com" class="pt-8">
-            <h2 class="text-3xl font-bold text-center mb-10">📢 Stratégie de Communication</h2>
-            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Une communication efficace est essentielle pour construire une communauté autour de notre projet. Cette section détaille notre plan pour engager notre audience et promouvoir nos actions de collecte de fonds.</p>
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h3 class="font-bold mb-4">Canaux de Diffusion</h3>
-                    <ul class="space-y-3 text-sm">
-                        <li class="flex items-center"><span class="text-xl mr-3">📱</span>Créer les comptes TikTok & Instagram.</li>
-                        <li class="flex items-center"><span class="text-xl mr-3">🗓️</span>Publier 2 à 3 posts par semaine.</li>
-                        <li class="flex items-center"><span class="text-xl mr-3">📄</span>Faire concevoir et imprimer des flyers.</li>
-                    </ul>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h3 class="font-bold mb-4">Idées de Contenu</h3>
+        <section id="infos" class="pt-8">
+            <h2 class="text-3xl font-bold text-center mb-10">ℹ️ Informations & Fichiers</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Centralisez ici tous les liens, documents, et contacts importants. Ajoutez une nouvelle entrée pour garder une trace de tout, des devis des fournisseurs aux articles de presse.</p>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                <div class="overflow-x-auto mb-6">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-gray-50">
-                            <tr><th class="p-3 font-semibold">Thème</th><th class="p-3 font-semibold">Format Suggéré</th></tr>
+                            <tr>
+                                <th class="p-3 font-semibold">Nom</th>
+                                <th class="p-3 font-semibold">Lien / Fichier</th>
+                                <th class="p-3 font-semibold text-right">Actions</th>
+                            </tr>
                         </thead>
-                        <tbody class="divide-y">
-                            <tr><td class="p-3">Présentation de l'équipe</td><td class="p-3 text-gray-600">Vidéos "en duo", interviews.</td></tr>
-                            <tr><td class="p-3">Entraînement & Fun</td><td class="p-3 text-gray-600">Concept "Sport Dorothée", défis.</td></tr>
-                            <tr><td class="p-3">L'Aventure en Coulisses</td><td class="p-3 text-gray-600">Stories, Réels "Making-of".</td></tr>
+                        <tbody id="info-table-body" class="divide-y">
                         </tbody>
                     </table>
                 </div>
+                <form id="add-info-form" class="grid sm:grid-cols-3 gap-4 items-end">
+                    <div class="sm:col-span-1">
+                        <label for="info-name" class="block text-sm font-medium text-gray-700">Nom</label>
+                        <input type="text" id="info-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm" required>
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label for="info-link" class="block text-sm font-medium text-gray-700">Lien (URL)</label>
+                        <input type="url" id="info-link" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm" required>
+                    </div>
+                    <button type="submit" class="w-full sm:w-auto justify-center rounded-md border border-transparent bg-rose-800 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-700 focus:ring-offset-2">Ajouter</button>
+                </form>
             </div>
         </section>
 
@@ -320,7 +344,7 @@
             const currentAmount = 0; 
 
             const ctx = document.getElementById('progressChart').getContext('2d');
-            const progressChart = new Chart(ctx, {
+            new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     datasets: [{
@@ -351,24 +375,14 @@
             function updateFinanceCalculations() {
                 const profits = [];
                 const labels = [];
-
                 eventFinanceData.forEach((event, index) => {
-                    const revenueInput = document.getElementById(`revenue-${index}`);
-                    const costInput = document.getElementById(`cost-${index}`);
-                    const profitCell = document.getElementById(`profit-${index}`);
-                    
-                    const revenue = parseFloat(revenueInput.value) || 0;
-                    const cost = parseFloat(costInput.value) || 0;
+                    const revenue = parseFloat(document.getElementById(`revenue-${index}`).value) || 0;
+                    const cost = parseFloat(document.getElementById(`cost-${index}`).value) || 0;
                     const profit = revenue - cost;
-
-                    event.revenue = revenue;
-                    event.cost = cost;
-
-                    profitCell.textContent = profit.toFixed(2);
+                    document.getElementById(`profit-${index}`).textContent = profit.toFixed(2);
                     profits.push(profit);
                     labels.push(event.name);
                 });
-                
                 if (eventProfitChart) {
                     eventProfitChart.data.labels = labels;
                     eventProfitChart.data.datasets[0].data = profits;
@@ -378,44 +392,23 @@
 
             function renderFinanceTable() {
                 const tableBody = document.querySelector("#event-finance-table tbody");
-                tableBody.innerHTML = '';
-                eventFinanceData.forEach((event, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+                tableBody.innerHTML = eventFinanceData.map((event, index) => `
+                    <tr>
                         <td class="p-3 font-medium">${event.name}</td>
                         <td class="p-3"><input type="number" id="revenue-${index}" value="${event.revenue}" class="w-24 p-1 border rounded finance-input"></td>
                         <td class="p-3"><input type="number" id="cost-${index}" value="${event.cost}" class="w-24 p-1 border rounded finance-input"></td>
                         <td class="p-3 text-right font-semibold" id="profit-${index}">0.00</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-                
-                document.querySelectorAll('.finance-input').forEach(input => {
-                    input.addEventListener('input', updateFinanceCalculations);
-                });
+                    </tr>
+                `).join('');
+                document.querySelectorAll('.finance-input').forEach(input => input.addEventListener('input', updateFinanceCalculations));
             }
             
             function initEventProfitChart() {
-                const ctx = document.getElementById('eventProfitChart').getContext('2d');
-                eventProfitChart = new Chart(ctx, {
+                const chartCtx = document.getElementById('eventProfitChart').getContext('2d');
+                eventProfitChart = new Chart(chartCtx, {
                     type: 'bar',
-                    data: {
-                        labels: [],
-                        datasets: [{
-                            label: 'Bénéfice Net Estimé (€)',
-                            data: [],
-                            backgroundColor: '#BE185D',
-                            borderColor: '#831843',
-                            borderWidth: 1,
-                            borderRadius: 5
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: { y: { beginAtZero: true } },
-                        plugins: { legend: { display: false } }
-                    }
+                    data: { labels: [], datasets: [{ label: 'Bénéfice Net Estimé (€)', data: [], backgroundColor: '#BE185D', borderRadius: 5 }] },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
                 });
             }
 
@@ -423,7 +416,72 @@
             initEventProfitChart();
             updateFinanceCalculations();
 
+            const eventNames = [
+                "Course à Carvin", "Course d'Orientation Halloween", "Vide-Dressing & Vente", 
+                "Soirée Nouvel An 100% Femmes", "Tombola & Galette des Rois", "Opération Saint-Valentin"
+            ];
+            
+            function renderEventDetails() {
+                const container = document.getElementById('event-notes-container');
+                container.innerHTML = eventNames.map(name => {
+                    const key = `event-notes-${name.replace(/\s+/g, '-')}`;
+                    const savedNotes = localStorage.getItem(key) || '';
+                    return `
+                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                            <h3 class="font-bold text-lg mb-4">${name}</h3>
+                            <textarea data-key="${key}" class="event-note w-full h-32 p-2 border border-gray-300 rounded-md focus:ring-rose-500 focus:border-rose-500 text-sm" placeholder="Rédigez vos notes pour cet événement ici...">${savedNotes}</textarea>
+                        </div>
+                    `;
+                }).join('');
 
+                document.querySelectorAll('.event-note').forEach(textarea => {
+                    textarea.addEventListener('input', (e) => {
+                        localStorage.setItem(e.target.dataset.key, e.target.value);
+                    });
+                });
+            }
+            renderEventDetails();
+
+            const infoForm = document.getElementById('add-info-form');
+            const infoTableBody = document.getElementById('info-table-body');
+            let infoItems = JSON.parse(localStorage.getItem('infoItems')) || [];
+
+            function saveInfoItems() {
+                localStorage.setItem('infoItems', JSON.stringify(infoItems));
+            }
+
+            function renderInfoItems() {
+                infoTableBody.innerHTML = infoItems.map((item, index) => `
+                    <tr>
+                        <td class="p-3 font-medium">${item.name}</td>
+                        <td class="p-3"><a href="${item.link}" target="_blank" class="text-rose-700 hover:underline break-all">${item.link}</a></td>
+                        <td class="p-3 text-right"><button class="delete-info-btn text-red-500 hover:text-red-700 text-xs font-semibold" data-index="${index}">SUPPRIMER</button></td>
+                    </tr>
+                `).join('');
+            }
+
+            infoForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('info-name').value.trim();
+                const link = document.getElementById('info-link').value.trim();
+                if (name && link) {
+                    infoItems.push({ name, link });
+                    saveInfoItems();
+                    renderInfoItems();
+                    infoForm.reset();
+                }
+            });
+
+            infoTableBody.addEventListener('click', function(e) {
+                if (e.target.classList.contains('delete-info-btn')) {
+                    const index = e.target.dataset.index;
+                    infoItems.splice(index, 1);
+                    saveInfoItems();
+                    renderInfoItems();
+                }
+            });
+            renderInfoItems();
+            
             const logisticsData = {
                 "Pour le Bivouac": [
                     "Tente (montage simple et rapide)", "Tente de secours (optionnel)", "Maillet", "Lampe de tente",
@@ -452,71 +510,69 @@
                 ]
             };
 
+            function updateCounters() {
+                Object.keys(logisticsData).forEach((_, index) => {
+                    const categoryItems = document.querySelectorAll(`.logistic-item[data-category-index="${index}"]`);
+                    const checkedItems = document.querySelectorAll(`.logistic-item[data-category-index="${index}"]:checked`);
+                    document.getElementById(`counter-${index}`).textContent = `${checkedItems.length} / ${categoryItems.length}`;
+                });
+            }
+
             const accordionContainer = document.getElementById('accordion-container');
-            Object.entries(logisticsData).forEach(([category, items], index) => {
-                const totalItems = items.length;
-                const accordionItem = document.createElement('div');
-                accordionItem.className = 'border rounded-lg';
-                accordionItem.innerHTML = `
+            accordionContainer.innerHTML = Object.entries(logisticsData).map(([category, items], catIndex) => `
+                <div class="border rounded-lg">
                     <button class="accordion-header w-full flex justify-between items-center p-4 text-left font-semibold">
                         <span>${category}</span>
                         <div class="flex items-center">
-                           <span class="text-sm font-normal text-gray-500 mr-2" id="counter-${index}">0 / ${totalItems}</span>
+                           <span class="text-sm font-normal text-gray-500 mr-2" id="counter-${catIndex}">0 / ${items.length}</span>
                            <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     </button>
                     <div class="accordion-content px-4 pb-4">
                         <ul class="space-y-2 text-sm">
-                            ${items.map((item, itemIndex) => `
+                            ${items.map((item, itemIndex) => {
+                                const checkboxId = `item-${catIndex}-${itemIndex}`;
+                                const isChecked = localStorage.getItem(checkboxId) === 'true';
+                                return `
                                 <li class="flex items-center">
-                                    <input type="checkbox" id="item-${index}-${itemIndex}" class="h-4 w-4 rounded border-gray-300 text-rose-800 focus:ring-rose-700 mr-3 logistic-item" data-category-index="${index}">
-                                    <label for="item-${index}-${itemIndex}" class="text-gray-700">${item}</label>
+                                    <input type="checkbox" id="${checkboxId}" class="h-4 w-4 rounded border-gray-300 text-rose-800 focus:ring-rose-700 mr-3 logistic-item" data-category-index="${catIndex}" ${isChecked ? 'checked' : ''}>
+                                    <label for="${checkboxId}" class="text-gray-700">${item}</label>
                                 </li>
-                            `).join('')}
+                            `}).join('')}
                         </ul>
                     </div>
-                `;
-                accordionContainer.appendChild(accordionItem);
-            });
-
+                </div>
+            `).join('');
+            
             document.querySelectorAll('.accordion-header').forEach(button => {
                 button.addEventListener('click', () => {
                     const content = button.nextElementSibling;
                     const icon = button.querySelector('svg');
-                    if (content.style.maxHeight) {
-                        content.style.maxHeight = null;
-                        icon.classList.remove('rotate-180');
-                    } else {
-                        document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
-                        document.querySelectorAll('.accordion-header svg').forEach(i => i.classList.remove('rotate-180'));
+                    const isExpanded = content.style.maxHeight;
+                    document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                    document.querySelectorAll('.accordion-header svg').forEach(i => i.classList.remove('rotate-180'));
+                    if (!isExpanded) {
                         content.style.maxHeight = content.scrollHeight + "px";
                         icon.classList.add('rotate-180');
                     }
                 });
             });
 
-            const logisticItems = document.querySelectorAll('.logistic-item');
-            function updateCounters() {
-                Object.keys(logisticsData).forEach((_, index) => {
-                    const categoryItems = document.querySelectorAll(`.logistic-item[data-category-index="${index}"]`);
-                    const checkedItems = document.querySelectorAll(`.logistic-item[data-category-index="${index}"]:checked`);
-                    const counter = document.getElementById(`counter-${index}`);
-                    counter.textContent = `${checkedItems.length} / ${categoryItems.length}`;
+            document.querySelectorAll('.logistic-item').forEach(item => {
+                item.addEventListener('change', (e) => {
+                    localStorage.setItem(e.target.id, e.target.checked);
+                    updateCounters();
                 });
-            }
-
-            logisticItems.forEach(item => {
-                item.addEventListener('change', updateCounters);
             });
-            
             updateCounters();
 
             const mobileNav = document.getElementById('mobile-nav');
             mobileNav.addEventListener('change', (e) => {
-                window.location.hash = e.target.value;
+                const target = document.querySelector(e.target.value);
+                if(target) target.scrollIntoView({ behavior: 'smooth' });
             });
 
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            document.querySelectorAll('a.nav-link').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
                     document.querySelector(this.getAttribute('href')).scrollIntoView({
