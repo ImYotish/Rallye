@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord | Projet Rallye Aïcha des Gazelles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Desert Harmony -->
+    <!-- Application Structure Plan: A single-page dashboard application with a fixed top navigation for easy access to the four main sections: a main dashboard with a progress chart, sponsors, events, communication, and logistics. This structure is chosen over a simple linear document to provide a task-oriented, interactive project management tool. The logistics section uses interactive accordions and checklists to manage the extensive list of items, making it far more usable than a static list. This design prioritizes quick access to information and tracking progress, which is essential for project management. -->
+    <!-- Visualization & Content Choices: 
+        - Fundraising Goal: Represented by a Chart.js donut chart to visually track progress towards the €40,000 goal, which is more engaging than a static number. Goal: Inform/Motivate.
+        - Sponsors & Events: Presented in structured tables and cards for clarity and easy scanning. Goal: Organize.
+        - Logistics Checklist: Implemented as interactive accordions with checkboxes. This organizes a large amount of information cleanly and allows the user to track their acquisitions. Goal: Organize/Track. Interaction: Users can check items, and a counter updates, providing immediate feedback.
+        - Financial Analysis: Interactive table with input fields for cost/revenue projections, dynamically updating a bar chart comparing event profitability. This allows for scenario planning. Goal: Analyze/Plan.
+        - Navigation: Smooth scrolling JS for a seamless single-page experience. Goal: User Experience.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            height: 300px;
+            margin: auto;
+        }
+        .chart-container-large {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin: auto;
+        }
+        .status-blue { background-color: #E0F2FE; color: #0C4A6E; }
+        .status-green { background-color: #D1FAE5; color: #065F46; }
+        .status-yellow { background-color: #FEF3C7; color: #92400E; }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-lg font-bold text-gray-900">Projet Gazelles</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#dashboard" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Tableau de Bord</a>
+                        <a href="#sponsors" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Sponsors</a>
+                        <a href="#events" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Événements</a>
+                        <a href="#finance" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Finances</a>
+                        <a href="#com" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Communication</a>
+                        <a href="#logistics" class="text-gray-600 hover:text-rose-900 px-3 py-2 rounded-md text-sm font-medium">Logistique</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-white border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        <option value="#dashboard">Tableau de Bord</option>
+                        <option value="#sponsors">Sponsors</option>
+                        <option value="#events">Événements</option>
+                        <option value="#finance">Finances</option>
+                        <option value="#com">Communication</option>
+                        <option value="#logistics">Logistique</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <section id="dashboard" class="pt-8 text-center">
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-4">Rallye Aïcha des Gazelles</h2>
+            <p class="text-lg text-gray-600 mb-12">Suivi de notre aventure et de notre campagne de financement.</p>
+            <div class="bg-white p-8 rounded-2xl shadow-lg max-w-2xl mx-auto">
+                <h3 class="text-2xl font-bold mb-2">Objectif de Financement</h3>
+                <p class="text-5xl font-extrabold text-rose-900 mb-6">40 000 €</p>
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+                 <p class="mt-4 text-sm text-gray-500">Ce graphique représente la progression de notre collecte de fonds. Chaque don nous rapproche du désert !</p>
+            </div>
+        </section>
+
+        <div class="border-t my-16"></div>
+
+        <section id="sponsors" class="pt-8">
+            <h2 class="text-3xl font-bold text-center mb-10">🎯 Sponsors & Partenariats</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">La recherche de partenaires est cruciale pour notre projet. Cette section nous permet de suivre nos contacts et d'organiser notre démarchage pour obtenir le soutien matériel et financier nécessaire.</p>
+            <div class="bg-white p-6 rounded-2xl shadow-lg overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-4 font-semibold">Cible</th>
+                            <th class="p-4 font-semibold">Domaine</th>
+                            <th class="p-4 font-semibold">Contact</th>
+                            <th class="p-4 font-semibold text-center">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr>
+                            <td class="p-4 font-medium">Norauto</td>
+                            <td class="p-4">Matériel Mécanique</td>
+                            <td class="p-4 text-gray-600">Jérôme Dumont : jdumont@norauto.fr</td>
+                            <td class="p-4 text-center"><span class="px-2 py-1 text-xs font-semibold rounded-full status-blue">À contacter</span></td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-medium">Décathlon</td>
+                            <td class="p-4">Équipement Sportif</td>
+                            <td class="p-4 text-gray-600">À identifier</td>
+                            <td class="p-4 text-center"><span class="px-2 py-1 text-xs font-semibold rounded-full status-blue">À contacter</span></td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-medium">Intersport / Go Sport</td>
+                            <td class="p-4">Équipement Sportif</td>
+                            <td class="p-4 text-gray-600">À identifier</td>
+                            <td class="p-4 text-center"><span class="px-2 py-1 text-xs font-semibold rounded-full status-blue">À contacter</span></td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-medium">Total Energie</td>
+                            <td class="p-4">Carburant / Financement</td>
+                            <td class="p-4 text-gray-600">À identifier</td>
+                            <td class="p-4 text-center"><span class="px-2 py-1 text-xs font-semibold rounded-full status-blue">À contacter</span></td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-medium">Leroy Merlin / Adeo</td>
+                            <td class="p-4">Matériel Bivouac</td>
+                            <td class="p-4 text-gray-600">À identifier</td>
+                            <td class="p-4 text-center"><span class="px-2 py-1 text-xs font-semibold rounded-full status-blue">À contacter</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="border-t my-16"></div>
+
+        <section id="events" class="pt-8">
+            <h2 class="text-3xl font-bold text-center mb-10">📅 Plan d'Action Événementiel</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Les événements sont au cœur de notre stratégie de collecte. Chaque événement est une opportunité de parler de notre projet, de rassembler notre communauté et de nous rapprocher de notre objectif financier.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col">
+                    <h3 class="font-bold mb-2">Course à Carvin</h3>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Participation pour gagner en visibilité.</p>
+                    <div class="mt-auto">
+                        <p class="font-semibold text-sm">Prochaine Étape :</p>
+                        <p class="text-sm text-amber-700">En attente de la réponse de la mairie.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col">
+                    <h3 class="font-bold mb-2">Course d'Orientation Halloween</h3>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Concept de labyrinthe Pop Corn à Avelin.</p>
+                    <div class="mt-auto">
+                        <p class="font-semibold text-sm">Prochaine Étape :</p>
+                        <p class="text-sm">Contacter le 07 68 98 41 43.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col">
+                    <h3 class="font-bold mb-2">Vide-Dressing & Vente</h3>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Thème Noël / Concept "Bring & Buy".</p>
+                    <div class="mt-auto">
+                        <p class="font-semibold text-sm">Prochaine Étape :</p>
+                        <p class="text-sm">Trouver lieu, date et modalités.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col">
+                    <h3 class="font-bold mb-2">Soirée Nouvel An 100% Femmes</h3>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Soirée spéciale avec repas et DJ.</p>
+                    <div class="mt-auto">
+                        <p class="font-semibold text-sm">Prochaine Étape :</p>
+                        <p class="text-sm">Trouver lieu, traiteur et DJ.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col">
+                    <h3 class="font-bold mb-2">Tombola & Galette des Rois</h3>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Événement en Janvier.</p>
+                    <div class="mt-auto">
+                        <p class="font-semibold text-sm">Prochaine Étape :</p>
+                        <p class="text-sm">Chercher lots, lieu et partenaire boulanger.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col">
+                    <h3 class="font-bold mb-2">Opération Saint-Valentin</h3>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Vente de fleurs pour les amoureux.</p>
+                    <div class="mt-auto">
+                        <p class="font-semibold text-sm">Prochaine Étape :</p>
+                        <p class="text-sm">Trouver grossiste, lieu de vente et matériel.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="border-t my-16"></div>
+
+        <section id="finance" class="pt-8">
+            <h2 class="text-3xl font-bold text-center mb-10">💰 Analyse Financière Prévisionnelle</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Cette section est votre outil pour planifier et visualiser les retombées financières de vos actions. Simulez les bénéfices de chaque événement et visualisez le potentiel des revenus de sponsoring pour affiner votre stratégie.</p>
+            
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg mb-12">
+                <h3 class="font-bold text-xl mb-6 text-center">Bénéfices Estimés par Événement</h3>
+                <div class="chart-container-large mb-8">
+                    <canvas id="eventProfitChart"></canvas>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left" id="event-finance-table">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 font-semibold">Événement</th>
+                                <th class="p-3 font-semibold">Revenu Estimé (€)</th>
+                                <th class="p-3 font-semibold">Coûts Estimés (€)</th>
+                                <th class="p-3 font-semibold text-right">Bénéfice Net (€)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                <h3 class="font-bold text-xl mb-8 text-center">Potentiel de Sponsoring sur le Véhicule</h3>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="relative w-full max-w-md mx-auto p-4">
+                        <div class="bg-gray-200 rounded-t-3xl h-20 w-full"></div>
+                        <div class="bg-gray-300 rounded-b-lg h-32 w-full relative grid grid-cols-5 grid-rows-2 gap-2 p-2">
+                            <div class="col-span-5 row-span-2 bg-gray-400 rounded-md flex items-center justify-center text-white font-bold text-center p-2">
+                                <div class="bg-rose-900/80 rounded p-2 text-xs">Capot Principal<br>5 000 €</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-200 h-40 w-full grid grid-cols-3 gap-2 p-2">
+                             <div class="bg-rose-800/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Porte G<br>1 500 €</div>
+                             <div class="bg-rose-700/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Toit<br>2 500 €</div>
+                             <div class="bg-rose-800/80 rounded-md flex items-center justify-center text-white font-bold text-center text-xs p-1">Porte D<br>1 500 €</div>
+                        </div>
+                         <div class="bg-gray-300 rounded-b-3xl h-20 w-full flex items-center justify-center">
+                            <div class="bg-rose-900/80 rounded p-2 text-white font-bold text-xs text-center">Arrière<br>3 000 €</div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 mb-4 text-sm">Les emplacements sur le véhicule offrent une visibilité exceptionnelle pour nos partenaires. Nous proposons plusieurs niveaux de sponsoring :</p>
+                        <ul class="space-y-3 text-sm">
+                            <li class="p-3 bg-rose-50 rounded-lg"><strong class="text-rose-900">Platine (5000€+) :</strong> Emplacement principal (capot), visibilité maximale sur tous les supports.</li>
+                            <li class="p-3 bg-gray-50 rounded-lg"><strong class="text-gray-800">Or (2500€ - 4999€) :</strong> Emplacements majeurs (toit, arrière), forte visibilité.</li>
+                            <li class="p-3 bg-gray-50 rounded-lg"><strong class="text-gray-800">Argent (1000€ - 2499€) :</strong> Emplacements secondaires (portes), bonne visibilité.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="border-t my-16"></div>
+
+        <section id="com" class="pt-8">
+            <h2 class="text-3xl font-bold text-center mb-10">📢 Stratégie de Communication</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Une communication efficace est essentielle pour construire une communauté autour de notre projet. Cette section détaille notre plan pour engager notre audience et promouvoir nos actions de collecte de fonds.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="font-bold mb-4">Canaux de Diffusion</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center"><span class="text-xl mr-3">📱</span>Créer les comptes TikTok & Instagram.</li>
+                        <li class="flex items-center"><span class="text-xl mr-3">🗓️</span>Publier 2 à 3 posts par semaine.</li>
+                        <li class="flex items-center"><span class="text-xl mr-3">📄</span>Faire concevoir et imprimer des flyers.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="font-bold mb-4">Idées de Contenu</h3>
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50">
+                            <tr><th class="p-3 font-semibold">Thème</th><th class="p-3 font-semibold">Format Suggéré</th></tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <tr><td class="p-3">Présentation de l'équipe</td><td class="p-3 text-gray-600">Vidéos "en duo", interviews.</td></tr>
+                            <tr><td class="p-3">Entraînement & Fun</td><td class="p-3 text-gray-600">Concept "Sport Dorothée", défis.</td></tr>
+                            <tr><td class="p-3">L'Aventure en Coulisses</td><td class="p-3 text-gray-600">Stories, Réels "Making-of".</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <div class="border-t my-16"></div>
+
+        <section id="logistics" class="pt-8">
+            <h2 class="text-3xl font-bold text-center mb-10">🛠️ Préparation & Logistique</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Le succès du rallye dépend d'une préparation minutieuse. Cette checklist interactive nous aide à suivre l'acquisition de chaque pièce d'équipement, du matériel de bivouac à l'équipement de navigation. Cochez les cases au fur et à mesure !</p>
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                <div class="mb-8">
+                    <h3 class="font-bold text-lg">Entraînement</h3>
+                    <p class="text-sm text-gray-600 mt-2">✅ Course d'orientation à Phalempin (prioritaire).</p>
+                </div>
+                <div id="accordion-container" class="space-y-4">
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-white mt-16 border-t">
+        <div class="container mx-auto py-6 px-4 text-center text-sm text-gray-500">
+            <p>&copy; 2024-2025 Projet Rallye Aïcha des Gazelles. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fundraisingGoal = 40000;
+            const currentAmount = 0; 
+
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            const progressChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [currentAmount, fundraisingGoal - currentAmount],
+                        backgroundColor: ['#831843', '#FDE8EF'],
+                        borderWidth: 0,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { tooltip: { enabled: false }, legend: { display: false } }
+                }
+            });
+
+            const eventFinanceData = [
+                { name: "Course Halloween", revenue: 1500, cost: 300 },
+                { name: "Vide-Dressing", revenue: 2000, cost: 200 },
+                { name: "Soirée Nouvel An", revenue: 5000, cost: 2500 },
+                { name: "Tombola", revenue: 3000, cost: 500 },
+                { name: "Op. St-Valentin", revenue: 1000, cost: 400 },
+            ];
+
+            let eventProfitChart;
+
+            function updateFinanceCalculations() {
+                const profits = [];
+                const labels = [];
+
+                eventFinanceData.forEach((event, index) => {
+                    const revenueInput = document.getElementById(`revenue-${index}`);
+                    const costInput = document.getElementById(`cost-${index}`);
+                    const profitCell = document.getElementById(`profit-${index}`);
+                    
+                    const revenue = parseFloat(revenueInput.value) || 0;
+                    const cost = parseFloat(costInput.value) || 0;
+                    const profit = revenue - cost;
+
+                    event.revenue = revenue;
+                    event.cost = cost;
+
+                    profitCell.textContent = profit.toFixed(2);
+                    profits.push(profit);
+                    labels.push(event.name);
+                });
+                
+                if (eventProfitChart) {
+                    eventProfitChart.data.labels = labels;
+                    eventProfitChart.data.datasets[0].data = profits;
+                    eventProfitChart.update();
+                }
+            }
+
+            function renderFinanceTable() {
+                const tableBody = document.querySelector("#event-finance-table tbody");
+                tableBody.innerHTML = '';
+                eventFinanceData.forEach((event, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="p-3 font-medium">${event.name}</td>
+                        <td class="p-3"><input type="number" id="revenue-${index}" value="${event.revenue}" class="w-24 p-1 border rounded finance-input"></td>
+                        <td class="p-3"><input type="number" id="cost-${index}" value="${event.cost}" class="w-24 p-1 border rounded finance-input"></td>
+                        <td class="p-3 text-right font-semibold" id="profit-${index}">0.00</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                document.querySelectorAll('.finance-input').forEach(input => {
+                    input.addEventListener('input', updateFinanceCalculations);
+                });
+            }
+            
+            function initEventProfitChart() {
+                const ctx = document.getElementById('eventProfitChart').getContext('2d');
+                eventProfitChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Bénéfice Net Estimé (€)',
+                            data: [],
+                            backgroundColor: '#BE185D',
+                            borderColor: '#831843',
+                            borderWidth: 1,
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            renderFinanceTable();
+            initEventProfitChart();
+            updateFinanceCalculations();
+
+
+            const logisticsData = {
+                "Pour le Bivouac": [
+                    "Tente (montage simple et rapide)", "Tente de secours (optionnel)", "Maillet", "Lampe de tente",
+                    "Sac de couchage 0°C / -5°C", "Drap de soie (pour les frileuses)", "Matelas de bonne qualité (autogonflant si possible)", "Oreiller"
+                ],
+                "Pour la Navigation": [
+                    "2 Calculatrices", "Trousse (crayons porte-mine, gomme, surligneurs, règle, pinces à dessin, scotch)",
+                    "2 Compas de visée", "2 Règles de navigation (ficelées pour ne pas les perdre)", "Ruban adhésif double face et sangles",
+                    "Pochettes cartonnées (pour feuilles de pointage et cartes du jour)", "2 Porte-vues (pour anciennes cartes et documents officiels)", "Sac porte-cartes"
+                ],
+                "Pour le Confort & l'Hygiène": [
+                    "Trousse de secours OBLIGATOIRE (couvertures de survie, paracétamol, etc.)", "Papier toilette biodégradable",
+                    "3 Serviettes de toilette microfibre", "Gel douche et shampooing biodégradables", "Trousse de toilette compacte (avec crochet)",
+                    "Lingettes nettoyantes et intimes", "Protections hygiéniques", "Lampe frontale avec piles de rechange"
+                ],
+                "Vêtements & Équipement Personnel": [
+                    "Lunettes de soleil (avec soufflets latéraux)", "Masque de ski (pour tempêtes de sable)",
+                    "Vêtements variés (pantalons toile, t-shirts, polaire, coupe-vent)", "Casquette ou cheich",
+                    "Soutien-gorge à maintien renforcé", "Chaussures montantes (type Palladium)", "Baskets", "Tongs (pour la douche)",
+                    "Tenue de gala et escarpins (pour la soirée de clôture)"
+                ],
+                "Divers & Utile": [
+                    "Jeu de couverts (couteau, fourchette, cuillère)", "Résistance chauffe-eau ou réchaud (pour étape marathon)",
+                    "Barres de céréales, fruits secs, café soluble, etc.", "Gants de travaux", "Cutter, tire-bouchon, thermos, briquet",
+                    "Réveil", "Sacs-poubelle", "Pince à épiler, ceinture pour le dos, patchs chauffants", "Ficelle et petits outils"
+                ]
+            };
+
+            const accordionContainer = document.getElementById('accordion-container');
+            Object.entries(logisticsData).forEach(([category, items], index) => {
+                const totalItems = items.length;
+                const accordionItem = document.createElement('div');
+                accordionItem.className = 'border rounded-lg';
+                accordionItem.innerHTML = `
+                    <button class="accordion-header w-full flex justify-between items-center p-4 text-left font-semibold">
+                        <span>${category}</span>
+                        <div class="flex items-center">
+                           <span class="text-sm font-normal text-gray-500 mr-2" id="counter-${index}">0 / ${totalItems}</span>
+                           <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </button>
+                    <div class="accordion-content px-4 pb-4">
+                        <ul class="space-y-2 text-sm">
+                            ${items.map((item, itemIndex) => `
+                                <li class="flex items-center">
+                                    <input type="checkbox" id="item-${index}-${itemIndex}" class="h-4 w-4 rounded border-gray-300 text-rose-800 focus:ring-rose-700 mr-3 logistic-item" data-category-index="${index}">
+                                    <label for="item-${index}-${itemIndex}" class="text-gray-700">${item}</label>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+                accordionContainer.appendChild(accordionItem);
+            });
+
+            document.querySelectorAll('.accordion-header').forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const icon = button.querySelector('svg');
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.classList.remove('rotate-180');
+                    } else {
+                        document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                        document.querySelectorAll('.accordion-header svg').forEach(i => i.classList.remove('rotate-180'));
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.classList.add('rotate-180');
+                    }
+                });
+            });
+
+            const logisticItems = document.querySelectorAll('.logistic-item');
+            function updateCounters() {
+                Object.keys(logisticsData).forEach((_, index) => {
+                    const categoryItems = document.querySelectorAll(`.logistic-item[data-category-index="${index}"]`);
+                    const checkedItems = document.querySelectorAll(`.logistic-item[data-category-index="${index}"]:checked`);
+                    const counter = document.getElementById(`counter-${index}`);
+                    counter.textContent = `${checkedItems.length} / ${categoryItems.length}`;
+                });
+            }
+
+            logisticItems.forEach(item => {
+                item.addEventListener('change', updateCounters);
+            });
+            
+            updateCounters();
+
+            const mobileNav = document.getElementById('mobile-nav');
+            mobileNav.addEventListener('change', (e) => {
+                window.location.hash = e.target.value;
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
